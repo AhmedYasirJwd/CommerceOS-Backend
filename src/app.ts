@@ -1,11 +1,11 @@
 import cors from 'cors';
 import express from 'express';
-import helmet from 'helmet';
 import { allowedOrigins } from './config/env.js';
 import { healthCheck } from './controllers/health.controller.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFound.js';
 import { requestLogger } from './middleware/requestLogger.js';
+import { securityHeaders } from './middleware/securityHeaders.js';
 import { apiRouter } from './routes/index.js';
 import { AppError } from './utils/errors.js';
 
@@ -15,7 +15,7 @@ export function createApp() {
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
 
-  app.use(helmet());
+  app.use(securityHeaders);
   app.use(
     cors({
       origin(origin, callback) {

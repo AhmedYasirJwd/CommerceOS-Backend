@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 import { env } from '../config/env.js';
 import { supabase } from '../config/supabase.js';
-import { membersRepository } from '../repositories/members.repository.js';
+import { membersRepository, type MembershipRow } from '../repositories/members.repository.js';
 import type { RequestContext } from '../types/context.js';
 import { AppError, badRequest, forbidden, unauthorized } from '../utils/errors.js';
 
@@ -50,7 +50,7 @@ async function resolveSupabaseContext(req: Request): Promise<RequestContext> {
   if (memberships.length === 0) throw forbidden('STORE_ACCESS_DENIED', 'You are not a member of any store');
 
   const requested = req.header('x-store-id');
-  let membership = memberships[0];
+  let membership: MembershipRow | undefined = memberships[0];
 
   if (requested) {
     if (!storeIdHeader.safeParse(requested).success) throw badRequest('INVALID_STORE_ID', 'X-Store-Id must be a UUID');
