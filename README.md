@@ -97,9 +97,8 @@ src/
   validators/    zod schemas for params, queries and bodies
   types/         row types, request context
   utils/         errors, pagination, date ranges, search, slug
-  app.ts         express app (no listen) — used by Vercel
+  app.ts         express app, default export (no listen) — Vercel's entry point
   server.ts      local HTTP server
-api/index.ts     Vercel entry point
 scripts/seed.ts  seed runner; scripts/seed/generate.ts is the pure data generator
 supabase/migrations/
 ```
@@ -627,18 +626,19 @@ Allowed values: `new | viewed | dismissed | actioned`.
 
 ## Vercel deployment
 
-Deploy the backend as its own Vercel project, separate from the frontend.
+Deploy the backend as its own Vercel project, separate from the frontend. Vercel detects it as an **Express** project and serves the default export of `src/app.ts` as one serverless function. No `vercel.json` is needed.
 
-1. Push this folder to a Git repository and import it in Vercel. Framework preset: **Other**. Leave the build command empty.
+1. Import the Git repository in Vercel. The framework preset is auto-detected (Express). Leave the build and output settings at their defaults.
 2. Under **Project Settings → Environment Variables**, set:
-   - `NODE_ENV=production`
    - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (the **secret** key, not the publishable one)
    - `FRONTEND_URL=https://amd-hackathon-frontend.vercel.app` (comma-separate preview URLs if needed)
    - `AUTH_MODE`
    - `DEFAULT_STORE_ID`
-3. Deploy. `api/index.ts` exports the Express app as a serverless function, and `vercel.json` rewrites every path to it, so `https://<backend>.vercel.app/health` and `/api/*` work as they do locally.
-4. In the frontend, set its API base URL (for example `NEXT_PUBLIC_API_URL`) to the backend URL. The frontend never needs a Supabase key for this API.
+
+   Do **not** set `NODE_ENV`. Vercel sets it to `production` at runtime on its own. Setting it yourself makes `npm install` skip dev dependencies, and the TypeScript build then fails.
+3. Deploy, then check `https://<backend>.vercel.app/health`.
+4. In the frontend, set its API base URL (for example `NEXT_PUBLIC_API_URL`) to the backend URL.
 
 In production only the origins in `FRONTEND_URL` are allowed by CORS.
 
